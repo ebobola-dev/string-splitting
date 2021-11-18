@@ -18,6 +18,11 @@ int main() {
 
 	printf("Введите что-нибудь(макс %d символов): ", MAX_INPUT_SIZE);
 	fgets(inputStr, MAX_INPUT_SIZE + 1, stdin);
+
+	while (strlen(inputStr) == 1) {
+		printf("Вы ничего не ввели\nВведите заново(макс %d): ", MAX_INPUT_SIZE);
+		fgets(inputStr, MAX_INPUT_SIZE + 1, stdin);
+	}
 	lengthStr = strlen(inputStr) - 1;
 
 	int _internalPosition = 0;
