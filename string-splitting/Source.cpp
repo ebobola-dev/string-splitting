@@ -3,65 +3,96 @@
 #include <windows.h>
 #include <string.h>
 
+//43 '4 'gh
+
 #define MAX_INPUT_SIZE 50
+#define DEBUG 1
 
 int main() {
 	setlocale(LC_ALL, "Rus");
 	SetConsoleCP(1251);
 
-	char inputStr[MAX_INPUT_SIZE + 1];
-	int lengthStr, cont = 1;
+	unsigned char inputStr[MAX_INPUT_SIZE + 1];
+	int lengthStr;
 
-	char letterList[MAX_INPUT_SIZE][MAX_INPUT_SIZE];
-	char digitList[MAX_INPUT_SIZE][MAX_INPUT_SIZE];
+	unsigned char letterList[MAX_INPUT_SIZE][MAX_INPUT_SIZE];
+	unsigned char digitList[MAX_INPUT_SIZE][MAX_INPUT_SIZE];
 	int letterList_position = 0, digitList_position = 0;
-	char trash;
 
-	while(cont){
+	while(1){
 		letterList_position = 0, digitList_position = 0;
 		inputStr[0] = '\0';
+		for (int i = 0; i < MAX_INPUT_SIZE; i++) {
+			for (int b = 0; b < MAX_INPUT_SIZE; b++) {
+				letterList[i][b] = '\0';
+				digitList[i][b] = '\0';
+			}
+		}
 
-		printf("Введите что-нибудь(макс %d символов): ", MAX_INPUT_SIZE);
+		printf("Введите что-нибудь(макс %d символов)(Введите 0, чтобы выйти): ", MAX_INPUT_SIZE);
 		fgets(inputStr, MAX_INPUT_SIZE + 1, stdin);
 
 		while (strlen(inputStr) == 1) {
-			printf("Вы ничего не ввели\nВведите заново(макс %d): ", MAX_INPUT_SIZE);
+			printf("Вы ничего не ввели\nВведите заново(макс %d)(Введите 0, чтобы выйти): ", MAX_INPUT_SIZE);
 			fgets(inputStr, MAX_INPUT_SIZE + 1, stdin);
 		}
 		lengthStr = strlen(inputStr) - 1;
 
+		if (inputStr[0] == '0' && lengthStr == 1) break;
+
 		int _internalPosition = 0;
-		int _wasChange = 0;
-		char _lastIs;
+		char lastChar;
+		int lastDefined = 0;
+		int finish = 0;
 
 		for (int i = 0; i < lengthStr; i++) {
-			char nowLetter = inputStr[i];
-			if (_wasChange) {
-				_internalPosition = 0;
-				_wasChange = 0;
+			unsigned char nowLetter = inputStr[i];
+			if (i == lengthStr - 1) finish = 1;
+			if (!isalnum(nowLetter)) {
+				if (_internalPosition) {
+					_internalPosition = 0;
+					if (lastDefined) {
+						if (lastChar == 'l') letterList_position++;
+						else digitList_position++;
+					}
+				}
+				continue;
 			}
-			if (isdigit(inputStr[i])) {
-				_lastIs = 'd';
+			if (isdigit(nowLetter)) {
+				if (lastDefined) {
+					if (lastChar == 'l' && _internalPosition != 0) {
+						letterList_position++;
+						_internalPosition = 0;
+					}
+				}
+				else {
+					lastDefined = 1;
+				}
+				lastChar = 'd';
 				digitList[digitList_position][_internalPosition] = nowLetter;
-				digitList[digitList_position][_internalPosition + 1] = '\0';
+				_internalPosition++;
+				
 			}
-			else {
-				_lastIs = 'l';
+			if (isalpha(nowLetter)) {
+				if (lastDefined) {
+					if (lastChar == 'd' && _internalPosition != 0) {
+						digitList_position++;
+						_internalPosition = 0;
+					}
+				}
+				else {
+					lastDefined = 1;
+				}
+				lastChar = 'l';
 				letterList[letterList_position][_internalPosition] = nowLetter;
-				letterList[letterList_position][_internalPosition + 1] = '\0';
+				_internalPosition++;
 			}
-			if (i != lengthStr - 1) {
-				if (isdigit(inputStr[i]) != isdigit(inputStr[i + 1])) {
-					if (_lastIs == 'd') digitList_position++;
-					else letterList_position++;
-					_wasChange = 1;
+			if (finish) {
+				if (lastDefined) {
+					if (lastChar == 'l') letterList_position++;
+					else digitList_position++;
 				}
 			}
-			else {
-				if (_lastIs == 'd') digitList_position++;
-				else letterList_position++;
-			}
-			_internalPosition++;
 		}
 
 		printf("\n");
@@ -90,11 +121,7 @@ int main() {
 			}
 			printf("]\n");
 		}
-
-		printf("\nВведите 1 - заново, 0 - выйти: ");
-		scanf("%d", &cont);
 		printf("\n");
-		scanf("%c", &trash);
 	}
 	return 0;
 }
